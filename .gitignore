@@ -3,3 +3,4 @@ fast_zero/.pytest_cache
 fast_zero/.ruff_cache
 fast_zero/fast_zero/__pycache__
 install-pyenv-win.ps1
+fast_zero/.coverage
