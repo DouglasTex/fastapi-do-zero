@@ -60,7 +60,7 @@ def test_create_user_error_username_exists(client, user):
         },
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json()['detail'] == 'Username already exists'
+    assert response.json()["detail"] == "Username already exists"
 
 
 def test_create_user_error_email_exists(client, user):
@@ -73,7 +73,7 @@ def test_create_user_error_email_exists(client, user):
         },
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json()['detail'] == 'Email already exists'
+    assert response.json()["detail"] == "Email already exists"
 
 
 def test_read_users(client):
@@ -94,13 +94,15 @@ def test_read_users_with_user(client, user):
     assert response.json() == {"users": [user_schema]}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
+
     response = client.put(
-        "/users/1",
+        f"/users/{user.id}",
+        headers={'Authorization': f'Bearer {token}'},
         json={
-            "password": "password",
             "username": "macacomanco",
             "email": "macaco@manco.com",
+            "password": "password",
             "id": 1,
         },
     )
@@ -112,7 +114,7 @@ def test_update_user(client, user):
     }
 
 
-def test_update_user_error(client):
+def test_update_user_error(client, user):
     response = client.put(
         "/users/9",
         json={
@@ -123,8 +125,23 @@ def test_update_user_error(client):
         },
     )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json()["detail"] == "User not found"
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json()["detail"] == "Not authenticated"
+
+
+def test_update_user_unauthorized(client, user):
+    response = client.put(
+        "/users/2",
+        json={
+            "password": "password",
+            "username": "macacomanco",
+            "email": "macaco@manco.com",
+            "id": 2,
+        },
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json()["detail"] == "Not authenticated"
 
 
 def test_get_user(client, user):
@@ -142,12 +159,48 @@ def test_get_user_error(client):
     assert response.json()["detail"] == "User not found"
 
 
-def test_delete_user(client, user):
-    response = client.delete("/users/1")
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f"/users/{user.id}",
+        headers={'Authorization': f'Bearer {token}'}
+    )
     assert response.json() == {"message": "User deleted"}
 
 
-def test_delete_user_error(client):
+def test_delete_user_error(client, user):
     response = client.delete("/users/9")
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json()["detail"] == "User not found"
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json()["detail"] == "Not authenticated"
+
+
+def test_get_token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password}
+    )
+
+    token = response.json()
+    assert response.status_code == HTTPStatus.OK
+    assert token['token_type'] == 'Bearer'
+    assert 'access_token' in token
+
+
+def test_get_token_error(client, user, token):
+    response = client.post(
+        '/token',
+        data={'test': user.email, 'fail': user.clean_password}
+    )
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_get_token_bad_request(client):
+    response = client.post(
+        '/token',
+        data={'username': 'not@email', 'password': 'not_a_password'}
+    )
+
+    token = response.json()
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert token['detail'] == 'Incorrect email or password'
+    assert 'access_token' not in token
