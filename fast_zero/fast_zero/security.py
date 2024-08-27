@@ -12,13 +12,11 @@ from zoneinfo import ZoneInfo
 
 from fast_zero.database import get_session
 from fast_zero.models import User
+from fast_zero.settings import Settings
 
+settings = Settings()
 pwd_context = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
-
-SECRET_KEY = 'very-secret'
-ALGORITHM = 'HS256'
-ACCESS_TOKEN_EXPIRES_MINUTES = 60
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 def get_password_hash(password: str):
@@ -32,37 +30,40 @@ def verify_password(plain_password: str, hashed_password: str):
 def create_access_token(data: dict):
     to_encode = data.copy()
 
-    expire = datetime.now(tz=ZoneInfo('America/Fortaleza')) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRES_MINUTES
+    expire = datetime.now(tz=ZoneInfo("America/Fortaleza")) + timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRES_MINUTES
     )
-    to_encode.update({'exp': expire})
+    to_encode.update({"exp": expire})
 
-    encoded_jwt = encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+    )
 
     return encoded_jwt
 
 
 def get_current_user(
     session: Session = Depends(get_session),
-    token: str = Depends(oauth2_scheme)
+    token: str = Depends(oauth2_scheme),
 ):
     credentials_exception = HTTPException(
         status_code=HTTPStatus.UNAUTHORIZED,
-        detail='could not validate credentials',
-        headers={'WWW-Authenticate': 'Bearer'}
+        detail="could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
 
     try:
-        payload = decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get('sub')
+        payload = decode(
+            token, settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+        username: str = payload.get("sub")
         if not username:
             raise credentials_exception
     except PyJWTError:
         raise credentials_exception
 
-    user_db = session.scalar(
-        select(User).where(User.email == username)
-    )
+    user_db = session.scalar(select(User).where(User.email == username))
 
     if not user_db:
         raise credentials_exception
