@@ -11,12 +11,12 @@ app.include_router(users.router)
 app.include_router(auth.router)
 
 
-@app.get("/", status_code=HTTPStatus.OK, response_model=Message)
+@app.get('/', status_code=HTTPStatus.OK, response_model=Message)
 def read_root():
-    return {"message": "Aoba"}
+    return {'message': 'Aoba'}
 
 
-@app.get("/aoba", status_code=HTTPStatus.OK, response_class=HTMLResponse)
+@app.get('/aoba', status_code=HTTPStatus.OK, response_class=HTMLResponse)
 def read_http():
     return """
         <!DOCTYPE html>

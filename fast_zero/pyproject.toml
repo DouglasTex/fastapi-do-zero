@@ -21,6 +21,8 @@ tzdata = "^2024.1"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.1"
 taskipy = "^1.13.0"
+factory-boy = "^3.3.1"
+freezegun = "^1.5.1"
 
 
 [tool.poetry.group.pytest.dependencies]
@@ -33,6 +35,10 @@ extend-exclude = ["migrations"]
 [tool.ruff.lint]
 preview = true
 select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
 
 [tool.pytest.ini_options]
 pythonpath = "."

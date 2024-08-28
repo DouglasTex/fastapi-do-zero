@@ -2,14 +2,14 @@ from http import HTTPStatus
 
 
 def test_read_root_must_return_ok_and_aoba(client):
-    response = client.get("/")
+    response = client.get('/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {"message": "Aoba"}
+    assert response.json() == {'message': 'Aoba'}
 
 
 def test_html_end_point_return_ok_and_html_aoba(client):
-    response = client.get("/aoba")
+    response = client.get('/aoba')
 
     assert response.status_code == HTTPStatus.OK
     assert (
