@@ -83,7 +83,6 @@ def test_refresh_token(client, user, token):
 
 
 def test_refresh_token_expired_error(client, user, token):
-
     with freeze_time('2023-07-14 12:00:00'):
         response = client.post(
             '/auth/token',
