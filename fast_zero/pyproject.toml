@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "3.12.*"
-fastapi = "^0.112.1"
+fastapi = {extras = ["standard"], version = "^0.112.2"}
 sqlalchemy = "^2.0.32"
 pydantic-settings = "^2.4.0"
 alembic = "^1.13.2"
@@ -16,6 +16,9 @@ python-multipart = "^0.0.9"
 pyjwt = "^2.9.0"
 pytz = "^2024.1"
 tzdata = "^2024.1"
+psycopg = {extras = ["binary"], version = "^3.2.1"}
+uvicorn = "^0.30.6"
+pydantic = {extras = ["email"], version = "^2.8.2"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -23,6 +26,7 @@ ruff = "^0.6.1"
 taskipy = "^1.13.0"
 factory-boy = "^3.3.1"
 freezegun = "^1.5.1"
+testcontainers = "^4.8.0"
 
 
 [tool.poetry.group.pytest.dependencies]

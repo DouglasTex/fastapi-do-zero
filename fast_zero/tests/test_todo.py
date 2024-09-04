@@ -131,7 +131,7 @@ def test_list_todo_filter_combined_should_return_5_todos(
     session.commit()
 
     response = client.get(
-        '/todo/?title=Test todo combined&description=combined&state=done',
+        '/todo/?title=Test todo combined&description=Combined&state=done',
         headers={'Authorization': f'Bearer {token}'},
     )
 
@@ -172,7 +172,7 @@ def test_patch_todo(session, client, user, token):
     response = client.patch(
         f'/todo/{todo.id}',
         json={'title': 'Tested!'},
-        headers={'Authorization': f'Bearer {token}'}
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.OK

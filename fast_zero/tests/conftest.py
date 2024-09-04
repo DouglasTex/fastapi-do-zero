@@ -4,12 +4,14 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy.pool import StaticPool
+from testcontainers.postgres import PostgresContainer
 
 from fast_zero.app import app
 from fast_zero.database import get_session
 from fast_zero.models import Todo, TodoState, User, table_registry
 from fast_zero.security import get_password_hash
+
+# https://youtu.be/bpBbbUgmdMs 48:58
 
 
 class TodoFactory(factory.Factory):
@@ -45,21 +47,22 @@ def client(session):
 
 
 @pytest.fixture
-def session():
-    engine = create_engine(
-        'sqlite:///:memory:',
-        # não vai checar se o db e os testes estão na mesma thread
-        connect_args={'check_same_thread': False},
-        # Dizer para que use apenas uma pool estática,
-        # para não criar validações complexas
-        poolclass=StaticPool,
-    )
+def session(engine):
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:
         yield session
 
     table_registry.metadata.drop_all(engine)
+
+
+@pytest.fixture(scope='session')
+def engine():
+    with PostgresContainer('postgres:16', driver='psycopg') as postgres:
+        _engine = create_engine(postgres.get_connection_url())
+
+        with _engine.begin():
+            yield _engine
 
 
 @pytest.fixture
